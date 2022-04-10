@@ -1,0 +1,45 @@
+version: '3.0'
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_HOST=$DB_HOST
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASSWORD
+    ports:
+      - 5432:5432
+
+  api:
+    build:
+      context: ./api
+      args:
+        WORKDIR: $WORKDIR
+    volumes:
+      - ./api:$WORKDIR
+    environment:
+      - DB_HOST=$DB_HOST
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+    ports:
+      - $API_PORT:$CONTAINER_PORT
+    depends_on:
+      - db
+
+  front:
+    build:
+      context: ./front
+      args:
+        WORKDIR: $WORKDIR
+    volumes:
+      - ./front:$WORKDIR
+    ports:
+      - $FRONT_PORT:$CONTAINER_PORT
+    depends_on:
+      - api
+volumes:
+  postgres-data:
+    driver: local
+    
